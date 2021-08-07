@@ -2,15 +2,11 @@
 #train_data: gene expression matrix of training set (matrix or data.frame, not null)
 #train_info: label of training set (character or integer, not null)
 #test_data:gene expression matrix of testing set (matrix or data.frame, not null)
-#test_info: label of training set (character or integer, not null)
-#directory: working directory (character, not null)
 #t: number of base classifiers (integer, Default: 10)
 #denoising_rate: denoising rate in the input layer (numeric, Default: 0.2)
 #lambda: L1 regularization rate (numeric, Default:1e-5)
-#activation_hidden: activation function used in the hidden layer of each stack
-#(in c('linear','sigmoid','tanh','relu','exponential','softmax'),Default: 'sigmoid')
-#activation_output: activation function used in the output layer of each stack
-#(in c('linear','sigmoid','tanh','relu','exponential','softmax'),Default: 'sigmoid')
+#activation_hidden: activation function used in the hidden layer of each stack (in c('linear','sigmoid','tanh','relu','exponential','softmax'),Default: 'sigmoid')
+#activation_output: activation function used in the output layer of each stack (in c('linear','sigmoid','tanh','relu','exponential','softmax'),Default: 'sigmoid')
 #batch_size: batch size in training autoencoder (integer, Default: 256)
 #learning_rate :learning rate in training autoencoder (numeric, Default : 0.001)
 #epochs: epochs in training autoencoder (integer, Default: 40)
@@ -24,8 +20,6 @@
 scIAE <- function(train_data,
                   train_info,
                   test_data,
-                  test_info,
-                  directory,
                   t = 10, 
                   denoising_rate = 0.2, 
                   lambda = 1e-5,
@@ -40,7 +34,7 @@ scIAE <- function(train_data,
                   unassigned = FALSE,
                   unassigned_threshold = NA,
                   verbose = TRUE
-                  )                  
+)                  
 {
   library("keras")
   library("clue")
@@ -49,11 +43,6 @@ scIAE <- function(train_data,
   library("e1071")
   library("kknn")
   library("rpart")
-  
-  setwd(directory)
-  source("evaluate.R")
-  true_labels_path <- 'true_labels_scIAE.csv'
-  pred_labels_path <- 'pred_labels_scIAE.csv'
   
   set.seed(1)
   datrows <- rownames(train_data)
@@ -197,7 +186,7 @@ scIAE <- function(train_data,
       }
       
       if (base_classifier == 'kNN'){
-        stop("cannot provide prediction rejection. Parameter ’unassigned‘ should be set to TRUE.")
+        stop("cannot provide prediction rejection. Parameter 'unassigned' should be set to TRUE.")
       }
       
       if (base_classifier == 'PLSDA'){
@@ -229,14 +218,14 @@ scIAE <- function(train_data,
     }
   }
   
-
+  
   
   if (t == 1)
   {
     test_prediction_result <- test_prediction_matrix
   }
   else{
-    test_prediction_result <- test_info
+    test_prediction_result <- test_prediction_vector
     for (ii in 1:nrow(test_prediction_matrix)){
       now_row <- test_prediction_matrix[ii, ]
       timesrow <- table(now_row)
@@ -246,15 +235,7 @@ scIAE <- function(train_data,
       test_prediction_result[ii]= maxidx
     }
   }
-
-  pred_labels <- as.character(test_prediction_result)
-  true_labels <- as.character(test_info)
   
-  write.csv(true_labels,'true_labels_scIAE.csv',row.names = FALSE)
-  write.csv(pred_labels,'pred_labels_scIAE.csv',row.names = FALSE)
-
-  result <- evaluate(true_labels_path, pred_labels_path)
-  evaluate_index <- c(result$Acc, mean(result$F1), median(result$F1))
-
-  return(evaluate_index)
+  pred_labels <- as.character(test_prediction_result)
+  return(pred_labels)
 }
