@@ -1,9 +1,13 @@
 source("scIAE.R")
-load("XXXX.RData")
-directory="XXXX"
-result=scIAE (train_data,
-       train_info,
-       test_data,
-       test_info,
-       directory)     
+source("evaluate.R")
+train_data <- read.csv("XXXX.csv")
+train_info <- read.csv("XXXX.csv")
+test_data <- read.csv("XXXX.csv")
+test_info <- read.csv("XXXX.csv")
+pred_labels <- scIAE (train_data,
+                      train_info,
+                      test_data,
+                      t=2) 
+true_labels <- test_info
+result <- evaluate(true_labels,pred_labels)
 print(result)
