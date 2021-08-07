@@ -235,7 +235,6 @@ scIAE <- function(train_data,
       test_prediction_result[ii]= maxidx
     }
   }
-  
   pred_labels <- as.character(test_prediction_result)
   return(pred_labels)
 }
