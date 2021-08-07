@@ -6,8 +6,7 @@ test_data <- read.csv("XXXX.csv")
 test_info <- read.csv("XXXX.csv")
 pred_labels <- scIAE (train_data,
                       train_info,
-                      test_data,
-                      t=2) 
+                      test_data) 
 true_labels <- test_info
 result <- evaluate(true_labels,pred_labels)
 print(result)
