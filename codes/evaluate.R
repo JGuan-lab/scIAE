@@ -1,9 +1,4 @@
-evaluate <- function(true_labels_path,pred_labels_path){
-  
-  true_labels <- read.csv(true_labels_path)
-  pred_labels <- read.csv(pred_labels_path)
-  true_labels <- as.character(unlist(true_labels))
-  pred_labels <- as.character(unlist(pred_labels))
+evaluate <- function(true_labels,pred_labels){
   
   true_celltypes <- unique(true_labels)
   true_labels <- true_labels[pred_labels != 'unassigned']
@@ -50,5 +45,9 @@ evaluate <- function(true_labels_path,pred_labels_path){
   names(F1) <- true_celltypes
   
   result <- list(Acc = Acc , F1 = F1)
+  
+  evaluate_index <- c(result$Acc, mean(result$F1), median(result$F1))
+  
+  return(evaluate_index)
   
 }
