@@ -1,5 +1,6 @@
 source("scIAE.R")
 source("evaluate.R")
+source('get_intersection.R')
 train_data <- read.csv("XXXX.csv")
 train_info <- read.csv("XXXX.csv")
 test_data <- read.csv("XXXX.csv")
