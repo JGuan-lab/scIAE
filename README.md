@@ -28,7 +28,7 @@ Run `main.R`. The parameters can be changed as below.
 
 ### 3.1 Prepare data
 
-The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.5168428. If users want to use their own datasets, the gene expression matrix should have gene names. Also, the order of cells of gene expression matrix should correspond to labels. Row refers to cells, and column refers to genes.
+The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.5168428. If users want to use their own datasets,  the order of cells of gene expression matrix should correspond to labels. Row refers to cells, and column refers to genes.
   
       train_data <- read.csv("pancreas_human_data.csv") #gene expression matrix of training set (matrix or data.frame, not null)
       train_info <- read.csv("pancreas_human_label.csv") #label of training set (character or integer, not null)
@@ -54,9 +54,9 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       > head(test_info)
       [1] "beta"    "ductal"  "delta"   "schwann" "delta"   "beta" 
 
-### 3.2 Get intersection genes
+### 3.2 Get intersection genes (Optional)
 
-`get_intersection()` can get intersection genes of training set and testing set.
+`get_intersection()` can get intersection genes of training set and testing set. In that case, the gene expression matrix of training set and testing set should have gene names.
   
       > dim(train_data)
       [1]  8569 20125
