@@ -28,35 +28,51 @@ Run `main.R`. The parameters can be changed as below.
 
 ### 3.1 Prepare data
 
-The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.5168428
+The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.5168428. If users want to use their own datasets, the gene expression matrix should have gene names. Also, the order of cells of gene expression matrix should correspond to labels. Row refers to cells, and column refers to genes.
   
-      train_data <- read.csv("kidney_droplet_data.csv") #gene expression matrix of training set (matrix or data.frame, not null)
-      train_info <- read.csv("kidney_droplet_label.csv") #label of training set (character or integer, not null)
-      test_data <- read.csv("kidney_facs_data.csv") #gene expression matrix of testing set (matrix or data.frame, not null)
-      test_info <- read.csv("kidney_facs_label.csv") #label of training set (character or integer, null)
+      train_data <- read.csv("pancreas_human_data.csv") #gene expression matrix of training set (matrix or data.frame, not null)
+      train_info <- read.csv("pancreas_human_label.csv") #label of training set (character or integer, not null)
+      test_data <- read.csv("pancreas_mouse_data.csv") #gene expression matrix of testing set (matrix or data.frame, not null)
+      test_info <- read.csv("pancreas_mouse_label.csv") #label of training set (character or integer, null)
       
-      > train_data[1:5,1:5]  
-                                 spink3  slc34a1     miox      kap    aldob
-      10X_P4_5_AAACCTGAGATGCCAG 0.000000 1.885036 0.000000 2.876936 1.333235
-      10X_P4_5_AAACCTGAGTGTCCAT 1.483756 2.056551 2.056551 2.683615 0.000000
-      10X_P4_5_AAACCTGCAAGGCTCC 1.240926 0.000000 0.000000 2.757024 0.000000
-      10X_P4_5_AAACCTGTCCTTGCCA 0.000000 0.000000 1.948658 3.370391 0.000000
-      10X_P4_5_AAACGGGAGCTGAACG 0.000000 1.463778 2.033989 2.659493 0.000000 
+      > train_data[1:5,1:5]
+                                    A1BG    A1CF    A2M  A2ML1  A4GALT
+      human1_lib1.final_cell_0001    0    1.028709   0     0      0
+      human1_lib1.final_cell_0002    0    0.000000   0     0      0
+      human1_lib1.final_cell_0003    0    0.000000   0     0      0
+      human1_lib1.final_cell_0004    0    0.000000   0     0      0
+      human1_lib1.final_cell_0005    0    0.000000   0     0      0
       > head(train_info)  
-      [1] "leukocyte"                              "endothelial cell"                       "mesangial cell"                        
-      [4] "kidney cell"                            "kidney collecting duct epithelial cell" "epithelial cell of proximal tubule"    
+      [1] "acinar" "acinar" "acinar" "acinar" "acinar" "acinar"
       > test_data[1:5,1:5]
-                                spink3   slc34a1  miox    kap   aldob
-      A1.B001717.3_38_F.1.1    1.132377 3.22624 3.267144   0  3.7626061
-      A10.B002775.3_39_F.1.1   0.000000 0.00000 0.000000   0  0.0000000
-      A10.MAA000752.3_10_M.1.1 0.000000 0.00000 0.000000   0  0.0000000
-      A11.MAA000801.3_11_M.1.1 0.000000 0.00000 0.000000   0  0.0000000
-      A12.B001717.3_38_F.1.1   0.000000 0.00000 0.000000   0  0.6571724
+                                     X0610007P14Rik X0610009B22Rik X0610009E02Rik  X0610009L18Rik X0610009O20Rik
+      mouse1_lib1.final_cell_0001      0.0000000        0.00000      0.0000000              0      0.0000000
+      mouse1_lib1.final_cell_0002      0.9138462        0.00000      0.0000000              0      0.0000000
+      mouse1_lib1.final_cell_0003      0.0000000        0.00000      0.5906152              0      0.0000000
+      mouse1_lib1.final_cell_0004      0.0000000        0.00000      0.0000000              0      0.6576304
+      mouse1_lib1.final_cell_0005      0.7252200        0.72522      0.0000000              0      0.0000000
       > head(test_info)
-      [1] "macrophage"                             "endothelial cell"                       "endothelial cell"                      
-      [4] "kidney collecting duct epithelial cell" "macrophage"                             "kidney collecting duct epithelial cell" 
+      [1] "beta"    "ductal"  "delta"   "schwann" "delta"   "beta" 
 
-### 3.2 Run scIAE
+### 3.2 Get intersection genes
+
+`get_intersection()` can get intersection genes of training set and testing set.
+  
+      > dim(train_data)
+      [1]  8569 20125
+      > dim(test_data)
+      [1]  1886 14878
+      > data_intersection <-get_intersection(train_data,test_data)
+      > train_data <- data_intersection[[1]]
+      > test_data <- data_intersection[[2]]
+      > dim(train_data)
+      [1]  8569 12473
+      > dim(test_data)
+      [1]  1886 12473
+ 
+Note that the data used here is original data from Hemberg-lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo are pre-processed, including extracting intersection genes of training set and testing set.
+      
+### 3.3 Run scIAE
 `scIAE()` returns predicted results of testing data. Its inputs include:
 
       train_data: gene expression matrix of training set (matrix or data.frame, not null)
@@ -81,12 +97,12 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
         
       > pred_labels <- scIAE (train_data,train_info, test_data) 
       > head(pred_labels)
-      [1] "B"            "Memory CD4 T" "CD14+ Mono"   "Memory CD4 T" "Naive CD4 T"  "CD14+ Mono" 
+      [1] "beta"        "ductal"      "delta"       "endothelial" "delta"       "beta"    
 
-### 3.3 Evaluate the classification effectiveness
+### 3.4 Evaluate the classification effectiveness
 If `test_info` is provided, `evaluate()` calculates the evaluation criteria (Acc, MeanF1, MedF1).
 
       > true_labels <- test_info
       > result <- evaluate(true_labels,pred_labels)
       > print(result)
-      [1] 0.8362235 0.870293 0.9295775
+      [1] 0.8419936 0.5534933 0.6829268
