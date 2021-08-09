@@ -30,47 +30,47 @@ Run `main.R`. The parameters can be changed as below.
 
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.5168428. If users want to use their own datasets,  the order of cells of gene expression matrix should correspond to labels. Row refers to cells, and column refers to genes.
   
-      train_data <- read.csv("pancreas_human_data.csv") #gene expression matrix of training set (matrix or data.frame, not null)
-      train_info <- read.csv("pancreas_human_label.csv") #label of training set (character or integer, not null)
-      test_data <- read.csv("pancreas_mouse_data.csv") #gene expression matrix of testing set (matrix or data.frame, not null)
-      test_info <- read.csv("pancreas_mouse_label.csv") #label of training set (character or integer, null)
+      train_data <- read.csv("pancreas_smartseq_data.csv") #gene expression matrix of training set (matrix or data.frame, not null)
+      train_info <- read.csv("pancreas_smartseq_label.csv") #label of training set (character or integer, not null)
+      test_data <- read.csv("pancreas_celseq_data.csv") #gene expression matrix of testing set (matrix or data.frame, not null)
+      test_info <- read.csv("pancreas_celseq_label.csv") #label of training set (character or integer, null)
       
       > train_data[1:5,1:5]
-                                    A1BG    A1CF    A2M  A2ML1  A4GALT
-      human1_lib1.final_cell_0001    0    1.028709   0     0      0
-      human1_lib1.final_cell_0002    0    0.000000   0     0      0
-      human1_lib1.final_cell_0003    0    0.000000   0     0      0
-      human1_lib1.final_cell_0004    0    0.000000   0     0      0
-      human1_lib1.final_cell_0005    0    0.000000   0     0      0
-      > head(train_info)  
-      [1] "acinar" "acinar" "acinar" "acinar" "acinar" "acinar"
+                 GCG       PPY     REG1A    INS       SST
+      AZ_A10  2.691009 13.919472 2.770087 5.973918 15.554698
+      AZ_A11 16.082961  2.459152 3.445946 2.201366  4.281374
+      AZ_A12  5.319866  4.941085 3.733110 1.017788 15.036942
+      AZ_A2   4.435744 15.090921 3.333762 2.358494  3.447319
+      AZ_A5   8.230754  6.415130 6.945927 2.383204  6.895719
+      > head(train_info)
+      [1] "delta"  "alpha"  "delta"  "gamma"  "ductal" "alpha" 
       > test_data[1:5,1:5]
-                                     X0610007P14Rik X0610009B22Rik X0610009E02Rik  X0610009L18Rik X0610009O20Rik
-      mouse1_lib1.final_cell_0001      0.0000000        0.00000      0.0000000              0      0.0000000
-      mouse1_lib1.final_cell_0002      0.9138462        0.00000      0.0000000              0      0.0000000
-      mouse1_lib1.final_cell_0003      0.0000000        0.00000      0.5906152              0      0.0000000
-      mouse1_lib1.final_cell_0004      0.0000000        0.00000      0.0000000              0      0.6576304
-      mouse1_lib1.final_cell_0005      0.7252200        0.72522      0.0000000              0      0.0000000
+                  REG1A  INS    GCG     CHGB    TM4SF4
+      D28.1_1  5.314580   0 10.642062 8.069391 6.143180
+      D28.1_13 7.106880   0  5.975432 0.000000 0.000000
+      D28.1_15 5.314580   0 10.642062 8.207436 6.979185
+      D28.1_17 4.518002   0 10.642062 5.725955 5.657918
+      D28.1_2  4.216514   0  6.061108 1.588734 1.588734
       > head(test_info)
-      [1] "beta"    "ductal"  "delta"   "schwann" "delta"   "beta" 
+      [1] "alpha"       "ductal"      "alpha"       "alpha"       "endothelial" "endothelial"
 
 ### 3.2 Get intersection genes (Optional)
 
 `get_intersection()` can get intersection genes of training set and testing set. In that case, the gene expression matrix of training set and testing set should have gene names.
   
       > dim(train_data)
-      [1]  8569 20125
+      [1]  2166 10698
       > dim(test_data)
-      [1]  1886 14878
+      [1] 2122 6878
       > data_intersection <-get_intersection(train_data,test_data)
       > train_data <- data_intersection[[1]]
       > test_data <- data_intersection[[2]]
       > dim(train_data)
-      [1]  8569 12473
+      [1] 2166 4943
       > dim(test_data)
-      [1]  1886 12473
+      [1] 2122 4943
  
-Note that the data used here is original data from Hemberg-lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo are pre-processed, including extracting intersection genes of training set and testing set.
+Note that the data used here is original data from Hemberg lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo are pre-processed, including extracting intersection genes of training set and testing set.
       
 ### 3.3 Run scIAE
 `scIAE()` returns predicted results of testing data. Its inputs include:
@@ -97,7 +97,7 @@ Note that the data used here is original data from Hemberg-lab, which is differe
         
       > pred_labels <- scIAE (train_data,train_info, test_data) 
       > head(pred_labels)
-      [1] "beta"        "ductal"      "delta"       "endothelial" "delta"       "beta"    
+      [1] "alpha"       "ductal"      "alpha"       "alpha"       "endothelial" "endothelial"   
 
 ### 3.4 Evaluate the classification effectiveness
 If `test_info` is provided, `evaluate()` calculates the evaluation criteria (Acc, MeanF1, MedF1).
@@ -105,4 +105,4 @@ If `test_info` is provided, `evaluate()` calculates the evaluation criteria (Acc
       > true_labels <- test_info
       > result <- evaluate(true_labels,pred_labels)
       > print(result)
-      [1] 0.8419936 0.5534933 0.6829268
+      [1] 0.9161169 0.8339408 0.9531429
