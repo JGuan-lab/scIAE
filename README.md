@@ -83,7 +83,7 @@ Note that the data used here is the one from Hemberg lab, which is different fro
       test_data: gene expression matrix of testing set (matrix or data.frame, not null)
       t: number of base classifiers (integer, default: 10)
       denoising_rate: denoising rate in the input layer (numeric, default: 0.2)
-      lambda: L1 regularization rate (numeric, default: 1e-5)
+      lambda: L1 regularization parameter (numeric, default: 1e-5)
       activation_hidden: activation function used in the hidden layer of each stack (in c('linear','sigmoid','tanh','relu','exponential','softmax'), default: 'sigmoid')
       activation_output: activation function used in the output layer of each stack (in c('linear','sigmoid','tanh','relu','exponential','softmax'), default: 'sigmoid')
       batch_size: batch size in training autoencoder (integer, default: 256)
