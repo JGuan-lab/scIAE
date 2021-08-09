@@ -83,22 +83,22 @@ Note that the data used here is the one from Hemberg lab, which is different fro
       test_data: gene expression matrix of testing set (matrix or data.frame, not null)
       t: number of base classifiers (integer, default: 10)
       denoising_rate: denoising rate in the input layer (numeric, default: 0.2)
-      lambda: L1 regularization rate (numeric, default:1e-5)
+      lambda: L1 regularization rate (numeric, default: 1e-5)
       activation_hidden: activation function used in the hidden layer of each stack (in c('linear','sigmoid','tanh','relu','exponential','softmax'), default: 'sigmoid')
       activation_output: activation function used in the output layer of each stack (in c('linear','sigmoid','tanh','relu','exponential','softmax'), default: 'sigmoid')
       batch_size: batch size in training autoencoder (integer, default: 256)
-      learning_rate :learning rate in training autoencoder (numeric, default : 0.001)
+      learning_rate: learning rate in training autoencoder (numeric, default: 0.001)
       epochs: epochs in training autoencoder (integer, default: 40)
       encoded_1: encoded dimension of stack 1 (integer, default: 1024)
       encoded_2: encoded dimension of stack 2 (integer, default: 128)
-      base_classifier: base classifier algorithm(in c('SVM','DT','kNN','PLSDA'), default:'SVM')
+      base_classifier: base classifier algorithm (in c('SVM','DT','kNN','PLSDA'), default: 'SVM')
       unassigned: if the classifier gives 'unassigned' label or not, i.e. provides prediction rejection option or not (logical, default: FALSE)
       unassigned_threshold: the probability threshold of giving 'unassigned' label (numeric, default: NA)
       verbose: if current ensemble is printed or not (logical, default: TRUE)
  
  Run `scIAE()`, then predicted results can be obtained. 
         
-      > pred_labels <- scIAE (train_data,train_info, test_data) 
+      > pred_labels <- scIAE (train_data, train_info, test_data) 
       > head(pred_labels)
       [1] "alpha"       "ductal"      "alpha"       "alpha"       "endothelial" "endothelial"   
 
@@ -106,6 +106,6 @@ Note that the data used here is the one from Hemberg lab, which is different fro
 If `test_info` is provided, `evaluate()` calculates the evaluation criteria (Acc, MeanF1, and MedF1).
 
       > true_labels <- test_info
-      > result <- evaluate(true_labels,pred_labels)
+      > result <- evaluate(true_labels, pred_labels)
       > print(result)
       [1] 0.9161169 0.8339408 0.9531429
