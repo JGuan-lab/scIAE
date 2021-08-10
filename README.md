@@ -12,6 +12,8 @@
 Depends: 
 
        R (>= 4.0.4)    
+       keras (>= 2.4.3)
+       tensorflow (>=2.3.1)
 Requirements: 
       
       library("keras")
