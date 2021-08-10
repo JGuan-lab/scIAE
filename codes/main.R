@@ -3,10 +3,12 @@ source("evaluate.R")
 source('get_intersection.R')
 
 ######   Prepare data   ######
-train_data <- read.csv("XXXX.csv")
+train_data <- read.csv("XXXX.csv", row.names = 1)
 train_info <- read.csv("XXXX.csv")
-test_data <- read.csv("XXXX.csv")
+test_data <- read.csv("XXXX.csv", row.names = 1)
 test_info <- read.csv("XXXX.csv")
+train_info <- as.character(train_info$train_label)
+test_info <- as.character(test_info$test_label)
 
 ######   Get intersection genes (Optional)   ######
 #data_intersection <-get_intersection(train_data,test_data)
