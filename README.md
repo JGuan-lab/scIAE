@@ -11,7 +11,8 @@
 ## 2. Installation
 Depends: 
 
-       R (>= 4.0.4)    
+       R (>= 4.0.4)   
+       Python (>= 3.8.3)
        keras (>= 2.4.3)
        tensorflow (>=2.3.1)
 Requirements: 
