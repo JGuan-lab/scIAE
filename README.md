@@ -57,9 +57,9 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       > head(test_info)
       [1] "alpha"       "ductal"      "alpha"       "alpha"       "endothelial" "endothelial"
 
-### 3.2 Get intersection genes (Optional)
+### 3.2 Get overlapping genes (Optional)
 
-`get_intersection()` can get intersection genes of training set and testing set. In that case, the gene expression matrix of training set and testing set should have gene names.
+`get_intersection()` can get overlapping genes of training set and testing set. In that case, the gene expression matrix of training set and testing set should have gene names.
   
       > dim(train_data)
       [1]  2166 10698
@@ -73,7 +73,7 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       > dim(test_data)
       [1] 2122 4943
  
-Note that the data used here is the one from Hemberg lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo were pre-processed, including extracting intersection genes of training set and testing set.
+Note that the data used here is the one from Hemberg lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo were pre-processed, including extracting overlapping genes of training set and testing set.
       
 ### 3.3 Run scIAE
 `scIAE()` returns predicted results of testing data. Its inputs include:
