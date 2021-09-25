@@ -18,7 +18,7 @@ test_info <- read.csv("XXXX.csv")
 ######   Run scIAE   ######
 scIAE_output <- scIAE (train_data,
                        train_info,
-                       test_data,t=1)
+                       test_data)
 
 pred_labels <- scIAE_output[['pred_labels']]
 DR_result <- scIAE_output[['DR_result']] 
