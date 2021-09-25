@@ -13,9 +13,14 @@
 #encoded_1: encoded dimension of stack 1 (integer, Default: 1024)
 #encoded_2: encoded dimension of stack 2 (integer, Default: 128)
 #base_classifier: base classifier algorithm(in c('SVM','DT','kNN','PLSDA'), Default:'SVM')
+#cost: cost of constraints violation if base_classifier is 'SVM' (numeric, Default:16)
+#gamma: parameter for radial basis if base_classifier is 'SVM' (numeric, Default:1/1000)
+#split: split rule if base_classifier is 'DT' (in c('gini','information'), Default: 'information')
+#kNN_k: number of neighbors if base_classifier is 'kNN' (integer, Default:5)
+#n_components: number of components if base_classifier is 'PLSDA' (integer, Default:10)
 #unassigned: if the classifier gives 'unassigned' label or not (logical, Default: FALSE)
 #unassigned_threshold: the probability threshold of giving 'unassigned' label (numeric, Default: NA)
-#verbose: if current ensemble is printed or not (logical, Default: TRUE)
+#DR_output: if dimensionality result of test data is output or not (logical, Default: TRUE)
 
 scIAE <- function(train_data,
                   train_info,
@@ -31,210 +36,93 @@ scIAE <- function(train_data,
                   encoded_1 = 1024,
                   encoded_2 = 128,
                   base_classifier = 'SVM',
+                  cost = 16,
+                  gamma = 1/1000,
+                  split = 'information',
+                  kNN_k = 5,
+                  n_components = 10,
                   unassigned = FALSE,
                   unassigned_threshold = NA,
-                  verbose = TRUE
-)                  
-{
-  library("keras")
-  library("clue")
+                  DR_output = TRUE
+)  {
+  source('RP.R')
+  source('DR.R')
+  source('classify.R')
   library("parallel")
-  library("caret")
-  library("e1071")
-  library("kknn")
-  library("rpart")
   
-  set.seed(1)
-  datrows <- rownames(train_data)
-  rownames(train_data) <- NULL
-  colnames(train_data) <- NULL
+  no_cores <- detectCores() - 1
+  cl <- makeCluster(no_cores)
   
-  num_gene <- ncol(train_data)
-  if (num_gene > 8192) {
-    final_proj_dim <- 8192
-  } 
-  else{
-    final_proj_dim <- 8192/2
-    while (final_proj_dim > 0) {
-      if (final_proj_dim < num_gene){
-        break
-      }
-      else{
-        final_proj_dim <- final_proj_dim/2
-      }
-    }
+  individual_RP = lapply(1:t, function(k) {
+    RP <- RP(train_data,test_data)
+    return(RP)
+  })
+  
+  print("Random projection is done!")
+  
+  X <- list()
+  for (i in c(1:t)){
+    X[[i]]=list(train_data=individual_RP[[i]][[1]],
+                test_data=individual_RP[[i]][[2]],
+                denoising_rate = 0.2, 
+                lambda = 1e-5,
+                activation_hidden = 'sigmoid',
+                activation_output = 'sigmoid',
+                batch_size = 256,
+                learning_rate = 0.001,
+                epochs = 40,
+                encoded_1 = 1024,
+                encoded_2 = 128)
   }
+  individual_DR = parallel::parLapply(cl,X, DR)
+
+  print("Dimensionality reduction is done!")
   
-  for (k in 1:t){
-    if (verbose){
-      print('current ensemble:')
-      print(k)
-    }
-    microtest_data <- test_data
-    microtrain_data <- train_data 
-    if (k != 1){
-      rm(random_proj_cols, encoder_input, encoder, decoder_input, decoder, ae_input,
-         autoencoder, microtest_layer1, microtest_layer2, microtrain_layer1, microtrain_layer2)
-    }
-    
-    random_proj_cols <- sample(num_gene, size = final_proj_dim, replace = FALSE)
-    microtrain_layer1 <- microtrain_data[, random_proj_cols]
-    microtest_layer1 <- microtest_data[, random_proj_cols]
-    
-    keras::k_clear_session()
-    
-    tns = encoder_input = keras::layer_input(shape = final_proj_dim)
-    tns = encoder_denoise = keras::layer_dropout(object = encoder_input, rate = denoising_rate)
-    
-    tns = keras::layer_dense(tns, units = encoded_1, activation = activation_hidden, activity_regularizer = keras::regularizer_l1(lambda))
-    tns = keras::layer_activation_leaky_relu(tns)
-    encoder = keras::keras_model(inputs = encoder_input, outputs = tns)
-    
-    tns = decoder_input = keras::layer_input(shape = encoded_1)
-    tns = keras::layer_dense(tns, units = final_proj_dim, activation = activation_output, activity_regularizer = keras::regularizer_l1(lambda))
-    decoder = keras::keras_model(inputs = decoder_input, outputs = tns)
-    
-    tns = ae_input = keras::layer_input(final_proj_dim)
-    tns = decoder(encoder(tns))
-    autoencoder = keras::keras_model(inputs = ae_input, outputs = tns)
-    keras::compile(autoencoder, optimizer = keras::optimizer_adam(lr = learning_rate), loss = 'mean_squared_error')
-    
-    keras::fit(autoencoder, microtrain_layer1, microtrain_layer1, batch_size = batch_size, epochs = epochs, verbose = 0)
-    
-    microtrain_layer2 <- predict(encoder, microtrain_layer1, batch_size = batch_size)
-    microtest_layer2 <- predict(encoder, microtest_layer1, batch_size = batch_size)
-    
-    tns = encoder_input = keras::layer_input(shape = encoded_1)
-    tns = encoder_denoise = keras::layer_dropout(object = encoder_input, rate = denoising_rate)
-    tns = keras::layer_dense(tns, units = encoded_2, activation = activation_hidden, activity_regularizer = keras::regularizer_l1(lambda))
-    tns = keras::layer_activation_leaky_relu(tns)
-    encoder = keras::keras_model(inputs = encoder_input, outputs = tns)
-    
-    tns = decoder_input = keras::layer_input(shape = encoded_2)
-    tns = keras::layer_dense(tns, units = encoded_1, activation = activation_output, activity_regularizer = keras::regularizer_l1(lambda))
-    decoder = keras::keras_model(inputs = decoder_input, outputs = tns)
-    
-    tns = ae_input= keras::layer_input(encoded_1)
-    tns = decoder(encoder(tns))
-    autoencoder = keras::keras_model(inputs = ae_input, outputs = tns)
-    keras::compile(autoencoder, optimizer = keras::optimizer_adam(lr = learning_rate), loss = 'mean_squared_error')
-    
-    keras::fit(autoencoder, microtrain_layer2, microtrain_layer2, batch_size = batch_size, epochs = epochs, verbose = 0)
-    
-    microtrain_data <- predict(encoder, microtrain_layer2, batch_size = batch_size)
-    microtest_data <- predict(encoder, microtest_layer2, batch_size = batch_size)
-    
-    if (unassigned == FALSE){
-      
-      if (base_classifier == 'SVM'){
-        model <- svm(as.factor(train_info)~., data = microtrain_data, cost = 16, gamma = 1/1000)
-        test_prediction_vector <- predict(model, microtest_data, type = 'class')
-      }
-      
-      if (base_classifier == 'DT'){
-        model <- rpart(train_info~., data = as.data.frame(microtrain_data), method = "class", 
-                       parms = list(split = "information"))
-        test_prediction_vector <- predict(model, as.data.frame(microtest_data), type = 'class')
-      }
-      
-      if (base_classifier == 'kNN'){
-        model <- kknn(as.factor(train_info)~., as.data.frame(microtrain_data), as.data.frame(microtest_data), k = 5)
-        test_prediction_vector <- as.character(model[["fitted.values"]])
-      }
-      
-      if (base_classifier == 'PLSDA'){
-        model <- plsda(microtrain_data, as.factor(train_info), ncomp = 10, type = 'class', probMethod = 'softmax')
-        test_prediction_vector <- predict(model, microtest_data, type = 'class')
-      }
-    }
-    else{
-      if (base_classifier == 'SVM'){
-        model <- svm(as.factor(train_info)~., data = microtrain_data, cost = 16, gamma = 1/1000)
-        test_prediction_prob <- predict(model, microtest_data, probability = TRUE)
-        pred_prob <- attr(test_prediction_prob, "probabilities")
-        test_prediction_vector <- c(1:nrow(pred_prob))
-        for (j in 1:nrow(pred_prob)){
-          now_prob <- pred_prob[j,]
-          maxprob <- max(now_prob)
-          if (maxprob > unassigned_threshold){
-            test_prediction_vector[j] <- names(which(now_prob == max(now_prob)))
-          }
-          else
-          {
-            test_prediction_vector[j] <- 'unassigned'
-          }
-        }
-      }
-      
-      if (base_classifier == 'DT'){
-        model <- rpart(train_info~., data = as.data.frame(microtrain_data), method = 'class', 
-                       parms = list(split = "information"))
-        test_prediction_prob <- predict(model, as.data.frame(microtest_data), probability = TRUE)
-        pred_prob <- test_prediction_prob
-        test_prediction_vector <- c(1:nrow(pred_prob))
-        for (j in 1:nrow(pred_prob)){
-          now_prob <- pred_prob[j,]
-          maxprob <- max(now_prob)
-          if (maxprob > unassigned_threshold){
-            test_prediction_vector[j] <- names(which(now_prob == max(now_prob)))
-          }
-          else
-          {
-            test_prediction_vector[j] <- 'unassigned'
-          }
-        }
-      }
-      
-      if (base_classifier == 'kNN'){
-        stop("cannot provide prediction rejection. Parameter 'unassigned' should be set to TRUE.")
-      }
-      
-      if (base_classifier == 'PLSDA'){
-        model <- plsda(microtrain_data, as.factor(train_info), ncomp = 10, type = 'class', probMethod = 'softmax')
-        test_prediction_prob <- predict(model, as.data.frame(microtest_data), type='prob')
-        pred_prob <- test_prediction_prob[,,1]
-        test_prediction_vector <- c(1:nrow(pred_prob))
-        for (j in 1:nrow(pred_prob)){
-          now_prob <- pred_prob[j,]
-          maxprob <- max(now_prob)
-          if (maxprob > unassigned_threshold){
-            test_prediction_vector[j] <- names(which(now_prob == max(now_prob)))
-          }
-          else
-          {
-            test_prediction_vector[j] <- 'unassigned'
-          }
-        }
-      }
-    }
-    
-    
-    test_prediction_vector <- as.character(test_prediction_vector)
-    if (k == 1){
-      test_prediction_matrix <- test_prediction_vector
-    }
-    else{
-      test_prediction_matrix <- cbind(test_prediction_matrix, test_prediction_vector)
-    }
+  Y <- list()
+  for (i in c(1:t)){
+    Y[[i]] <- list( microtrain_data=individual_DR[[i]][[1]],
+                    train_info=train_info,
+                    microtest_data=individual_DR[[i]][[2]],
+                    base_classifier = 'SVM',
+                    cost = 16,
+                    gamma = 1/1000,
+                    split = 'information',
+                    kNN_k = 5,
+                    n_components = 10,
+                    unassigned = FALSE,
+                    unassigned_threshold = NA)
   }
+  individual_classifiers <- parallel::parLapply(cl, Y, classify)
   
-  
-  
-  if (t == 1)
-  {
+  test_prediction_matrix <- matrix(unlist(individual_classifiers),length(individual_classifiers[[1]]),length(individual_classifiers))
+  if (t == 1){
     test_prediction_result <- test_prediction_matrix
-  }
-  else{
-    test_prediction_result <- test_prediction_vector
+    if (DR_output == TRUE){
+      DR_result <- individual_DR[[t]][[2]]
+    }
+  }else{
+    test_prediction_result <- individual_classifiers[[1]]
     for (ii in 1:nrow(test_prediction_matrix)){
       now_row <- test_prediction_matrix[ii, ]
       timesrow <- table(now_row)
       timesrow <- as.data.frame(timesrow)
       maxidx <- timesrow[which(timesrow$Freq == max(timesrow$Freq)), 1]
       maxidx <- as.character(maxidx)
-      test_prediction_result[ii]= maxidx
+      test_prediction_result[ii] <- maxidx
     }
   }
   pred_labels <- as.character(test_prediction_result)
-  return(pred_labels)
+
+  print("Classification is done!")
+  
+  
+  if (t == 1 & DR_output == TRUE){
+    return(list(pred_labels = pred_labels,
+                DR_result = DR_result))
+  }
+  else{
+    return(list(pred_labels = pred_labels))
+  }
+  
 }
+

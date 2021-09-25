@@ -8,6 +8,6 @@ get_intersection <- function(train_data,test_data){
   xgenes <- intersect(train_genes2,test_genes2)
   train_data <- train_data[,xgenes]
   test_data <- test_data[,xgenes]
-  list_data=list(train_data,test_data)
+  list_data <- list(train_data,test_data)
   return(list_data)
 }
