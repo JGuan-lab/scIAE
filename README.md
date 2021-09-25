@@ -1,8 +1,8 @@
 # scIAE: an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data </br> 
 ## 1. Introduction  
-  scIAE is an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data to identify cell type and predict disease status.
+  scIAE is an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data to identify cell type and predict disease status. It is also a robust tool for dimensionality reduction of scRNA-seq data.
   
-  Given gene expression matrix and label (cell type annotation or disease status) of training set and the gene expression matrix of testing set, scIAE can provide the predicted label of testing set. If true label of testing set is given, the evaluation criteria (Acc, MeanF1, and MedF1) can be calculated to evaluate the classification effectiveness of scIAE.
+  Given gene expression matrix and label (cell type annotation or disease status) of training set and the gene expression matrix of testing set, scIAE can provide the predicted label of testing set. If true label of testing set is given, the evaluation criteria (Acc, MeanF1, and MedF1) can be calculated to evaluate the classification effectiveness of scIAE. If number of base classifiers is 1, the dimensionality reduction result of testing set can also be obtained.
  
   scIAE corresponds to the following paper:
   
@@ -19,12 +19,12 @@ Requirements:
       keras (>= 2.4.3)
       tensorflow (>=2.3.1)
       library("keras")
-      library("clue")
       library("parallel")
       library("caret")
       library("e1071")
       library("kknn")
-      library("rpart")     
+      library("rpart") 
+      library("rBayesianOptimization")
   
 ## 3. Quick start
 
@@ -61,7 +61,7 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       > head(test_info)
       [1] "alpha"       "ductal"      "alpha"       "alpha"       "endothelial" "endothelial"
 
-### 3.2 Get overlapping genes (Optional)
+### 3.2 Get overlapping genes (optional)
 
 `get_intersection()` can get overlapping genes of training set and testing set. In that case, the gene expression matrix of training set and testing set should have gene names.
   
@@ -78,8 +78,19 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       [1] 2122 4943
  
 Note that the data used here is the one from Hemberg lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo were pre-processed, including extracting overlapping genes of training set and testing set.
+
+### 3.3 Cross validation (optional)
+`cross_validation()` can perform cross validation for tuning parameters of scIAE. The function is able to tune number of base classifiers, denoising rate, lambda (regularization parameter), activation function of hidden layer and output layer, and encoded dimensions in each stack. Also, the function can tune parameters of base classifiers, which is cost and gamma for SVM, split criterion for DT, number of neighbors for kNN, and number of components for PLSDA. The inputs of the function contains intervals of parameters given by users, training data and corresponding labels, and number of folds (Default: 5). Then, the function can perform cross validation and return ACC, MeanF1, and MedF1 for each parameter combination. Users are able to choose parameters based on their preferences.
+  
+      > cv_result <- cross_validation(train_data, 
+                                      train_info,
+                                      t_interval = c(10,15,20), 
+                                      denoising_rate_interval = c(0.1,0.2,0.3), 
+                                      lambda_interval = c(1e-4,1e-5),
+                                      base_classifier = 'DT',
+                                      split_interval = c('information','gini'))
       
-### 3.3 Run scIAE
+### 3.4 Run scIAE
 `scIAE()` returns predicted results of testing data. Its inputs include:
 
       train_data: gene expression matrix of training set (matrix or data.frame, not null)
@@ -96,17 +107,32 @@ Note that the data used here is the one from Hemberg lab, which is different fro
       encoded_1: encoded dimension of stack 1 (integer, default: 1024)
       encoded_2: encoded dimension of stack 2 (integer, default: 128)
       base_classifier: base classifier algorithm (in c('SVM','DT','kNN','PLSDA'), default: 'SVM')
-      unassigned: if the classifier gives 'unassigned' label or not, i.e. provides prediction rejection option or not (logical, default: FALSE)
-      unassigned_threshold: the probability threshold of giving 'unassigned' label (numeric, default: NA)
       verbose: if current ensemble is printed or not (logical, default: TRUE)
+      cost: cost of constraints violation if base_classifier is 'SVM' (numeric, Default:16)
+      gamma: parameter for radial basis if base_classifier is 'SVM' (numeric, Default:1/1000)
+      split: split rule if base_classifier is 'DT' (in c('gini','information'), Default: 'information')
+      kNN_k: number of neighbors if base_classifier is 'kNN' (integer, Default:5)
+      n_components: number of components if base_classifier is 'PLSDA' (integer, Default:10)
+      unassigned: if the classifier gives 'unassigned' label or not (logical, Default: FALSE)
+      unassigned_threshold: the probability threshold of giving 'unassigned' label (numeric, Default: NA)
+      DR_output: if dimensionality result of testing set is output or not (logical, Default: TRUE)
  
  Run `scIAE()`, then predicted results can be obtained. 
-        
-      > pred_labels <- scIAE (train_data, train_info, test_data) 
+       
+      > scIAE_output <- scIAE (train_data,train_info,test_data)
+      > pred_labels <- scIAE_output[['pred_labels']] 
       > head(pred_labels)
       [1] "alpha"       "ductal"      "alpha"       "alpha"       "endothelial" "endothelial"   
+      
+ If `t=1`, then the dimensionality reduction result of testing set can also be obtained.
+ 
+      > scIAE_output <- scIAE (train_data,train_info,test_data,t=1)
+      > DR_result <- scIAE_output[['DR_result']]
+      > dim(DR_result)
+      [1] 2122  128
+ 
 
-### 3.4 Evaluate the classification effectiveness
+### 3.5 Evaluate the classification effectiveness
 If `test_info` is provided, `evaluate()` calculates the evaluation criteria (Acc, MeanF1, and MedF1).
 
       > true_labels <- test_info
