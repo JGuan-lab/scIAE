@@ -91,7 +91,7 @@ Note that the data used here is the one from Hemberg lab, which is different fro
                                       split_interval = c('information','gini'))
       
 ### 3.4 Run scIAE
-`scIAE()` returns predicted results of testing data. Its inputs include:
+`scIAE()` returns predicted results of testing data. Its inputs are listed below.
 
       train_data: gene expression matrix of training set (matrix or data.frame, not null)
       train_info: label of training set (character or integer, not null)
