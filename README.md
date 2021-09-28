@@ -1,8 +1,8 @@
 # scIAE: an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data </br> 
 ## 1. Introduction  
-  scIAE is an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data to identify cell type and predict disease status. It is also a robust tool for dimensionality reduction of scRNA-seq data.
+  scIAE is an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data. It can be used to perform feature extraction, identify cell type and predict disease status.
   
-  Given gene expression matrix and label (cell type annotation or disease status) of training set and the gene expression matrix of testing set, scIAE can provide the predicted label of testing set. If true label of testing set is given, the evaluation criteria (Acc, MeanF1, and MedF1) can be calculated to evaluate the classification effectiveness of scIAE. If number of base classifiers is 1, the dimensionality reduction result of testing set can also be obtained.
+  Given gene expression matrix and label (cell type annotation or disease status) of training set and the gene expression matrix of testing set, scIAE can provide the predicted label of testing set. If true label of testing set is given, the evaluation criteria (ACC, MeanF1, and MedF1) can be calculated to evaluate the classification effectiveness of scIAE. If the number of base classifiers is set to one, the dimensionality reduction result of testing set can also be obtained.
  
   scIAE corresponds to the following paper:
   
@@ -37,7 +37,7 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       train_data <- read.csv("pancreas_smartseq_data.csv") #gene expression matrix of training set (matrix or data.frame, not null)
       train_info <- read.csv("pancreas_smartseq_label.csv") #label of training set (character or integer, not null)
       test_data <- read.csv("pancreas_celseq_data.csv") #gene expression matrix of testing set (matrix or data.frame, not null)
-      test_info <- read.csv("pancreas_celseq_label.csv") #label of testing set (character or integer, should be provided when calculating Acc, MeanF1, and MedF1)
+      test_info <- read.csv("pancreas_celseq_label.csv") #label of testing set (character or integer, should be provided when calculating ACC, MeanF1, and MedF1)
       
       > train_data[1:5,1:5]
                  GCG       PPY     REG1A    INS       SST
@@ -63,7 +63,7 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
 
 ### 3.2 Get overlapping genes (optional)
 
-`get_intersection()` can get overlapping genes of training set and testing set. In that case, the gene expression matrix of training set and testing set should have gene names.
+`get_intersection()` can get overlapping genes between training set and testing set. In this case, the gene expression matrices of training set and testing set should have gene names.
   
       > dim(train_data)
       [1]  2166 10698
@@ -77,10 +77,10 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
       > dim(test_data)
       [1] 2122 4943
  
-Note that the data used here is the one from Hemberg lab, which is different from what we uploaded to Zenodo. The datasets we uploaded to Zenodo were pre-processed, including extracting overlapping genes of training set and testing set.
+Note that the data used here is the one from the Hemberg lab, which is different from that we uploaded to Zenodo. The datasets we uploaded to Zenodo were pre-processed, including extracting overlapping genes between training set and testing set.
 
 ### 3.3 Cross validation (optional)
-`cross_validation()` can perform cross validation for tuning parameters of scIAE. The function is able to tune number of base classifiers, denoising rate, lambda (regularization parameter), activation function of hidden layer and output layer, and encoded dimensions in each stack. Also, the function can tune parameters of base classifiers, which is cost and gamma for SVM, split criterion for DT, number of neighbors for kNN, and number of components for PLSDA. The inputs of the function contains intervals of parameters given by users, training data and corresponding labels, and number of folds (Default: 5). Then, the function can perform cross validation and return ACC, MeanF1, and MedF1 for each parameter combination. Users are able to choose parameters based on their preferences.
+`cross_validation()` can perform cross validation for tuning parameters of scIAE, including the number of base classifiers, denoising rate, lambda (regularization parameter), activation function of hidden layer and output layer, and encoded dimensions in each stack. Moreover, the function can be used to tune the hyperparameters of base classifiers, including the cost and gamma for SVM, the split criterion for DT, the number of neighbors for kNN, and the number of components for PLSDA. The inputs of the function contain intervals of parameters given by users, training data and corresponding labels, and the number of folds (default: 5). Then, the function can perform cross validation and return ACC, MeanF1, and MedF1 for each parameter combination. Users can choose the parameters to be used based on their preferences.
   
       > cv_result <- cross_validation(train_data, 
                                       train_info,
@@ -115,7 +115,7 @@ Note that the data used here is the one from Hemberg lab, which is different fro
       n_components: number of components if base_classifier is 'PLSDA' (integer, Default:10)
       unassigned: if the classifier gives 'unassigned' label or not (logical, Default: FALSE)
       unassigned_threshold: the probability threshold of giving 'unassigned' label (numeric, Default: NA)
-      DR_output: if dimensionality result of testing set is output or not (logical, Default: TRUE)
+      DR_output: if the dimensionality reduction result of testing set is returned or not (logical, Default: TRUE)
  
  Run `scIAE()`, then predicted results can be obtained. 
        
@@ -133,7 +133,7 @@ Note that the data used here is the one from Hemberg lab, which is different fro
  
 
 ### 3.5 Evaluate the classification effectiveness
-If `test_info` is provided, `evaluate()` calculates the evaluation criteria (Acc, MeanF1, and MedF1).
+If `test_info` is provided, `evaluate()` calculates the evaluation criteria (ACC, MeanF1, and MedF1).
 
       > true_labels <- test_info
       > result <- evaluate(true_labels, pred_labels)
