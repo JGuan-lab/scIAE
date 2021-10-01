@@ -1,4 +1,4 @@
-# scIAE: an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data </br> 
+# scIAE </br> 
 ## 1. Introduction  
   scIAE is an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data. It can be used to perform feature extraction, identify cell type and predict disease status.
   
@@ -80,7 +80,7 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
 Note that the data used here is the one from the Hemberg lab, which is different from that we uploaded to Zenodo. The datasets we uploaded to Zenodo were pre-processed, including extracting overlapping genes between training set and testing set.
 
 ### 3.3 Cross validation (optional)
-`cross_validation()` can perform cross validation for tuning parameters of scIAE, including the number of base classifiers, denoising rate, lambda (regularization parameter), activation function of hidden layer and output layer, and encoded dimensions in each stack. Moreover, the function can be used to tune the hyperparameters of base classifiers, including the cost and gamma for SVM, the split criterion for DT, the number of neighbors for kNN, and the number of components for PLSDA. The inputs of the function contain intervals of parameters given by users, training data and corresponding labels, and the number of folds (default: 5). Then, the function can perform cross validation and return ACC, MeanF1, and MedF1 for each parameter combination. Users can choose the parameters to be used based on their preferences.
+`cross_validation()` can perform cross validation for tuning parameters of scIAE, including the number of base classifiers, denoising rate, lambda (regularization parameter), activation functions of hidden layer and output layer, and the encoded dimensions in each stack. Moreover, the function can be used to tune the hyperparameters of base classifiers, including the cost and gamma for SVM, the split criterion for DT, the number of neighbors for kNN, and the number of components for PLSDA. The inputs of `cross_validation()` contain intervals of parameters given by users, training data and corresponding label, and the number of folds for cross validation (default: 5). Then, the function can perform cross validation and return ACC, MeanF1, and MedF1 for each parameter combination. Users can choose the parameters to be used based on their preferences.
   
       > cv_result <- cross_validation(train_data, 
                                       train_info,
