@@ -84,11 +84,12 @@ Note that the data used here is the one from the Hemberg lab, which is different
   
       > cv_result <- cross_validation(train_data, 
                                       train_info,
-                                      t_interval = c(10,15,20), 
+                                      t_interval = c(5,10,15), 
                                       denoising_rate_interval = c(0.1,0.2,0.3), 
                                       lambda_interval = c(1e-4,1e-5),
-                                      base_classifier = 'DT',
-                                      split_interval = c('information','gini'))
+                                      base_classifier = 'SVM',
+                                      cost_interval = c(8,16),
+                                      gamma_interval = c(1/500,1/1000))
       
 ### 3.4 Run scIAE
 `scIAE()` returns predicted results of testing data. Its inputs are listed below.
