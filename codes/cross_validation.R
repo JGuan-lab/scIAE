@@ -43,7 +43,7 @@ cross_validation <- function(data,
                     for (cost in cost_interval){
                       for (gamma in gamma_interval){
                         count=count+1
-                        pred_labels <- scIAE (train_data,
+                        scIAE_output <- scIAE (train_data,
                                               train_info,
                                               test_data,
                                               t=t,
@@ -55,7 +55,8 @@ cross_validation <- function(data,
                                               encoded_2 = encoded_2,
                                               base_classifier = base_classifier,
                                               cost = cost,
-                                              gamma = gamma) 
+                                              gamma = gamma)
+                        pred_labels <- scIAE_output[['pred_labels']]
                         true_labels <- test_info
                         metrics <- evaluate(true_labels,pred_labels)
                         result_each=rbind(result_each,c(t,denoising_rate,lambda,activation_hidden,activation_output,
@@ -67,7 +68,7 @@ cross_validation <- function(data,
                   else if (base_classifier == 'DT'){
                     for (split in split_interval){
                       count=count+1
-                      pred_labels <- scIAE (train_data,
+                      scIAE_output  <- scIAE (train_data,
                                             train_info,
                                             test_data,
                                             t=t,
@@ -79,6 +80,7 @@ cross_validation <- function(data,
                                             encoded_2 = encoded_2,
                                             base_classifier = base_classifier,
                                             split = split) 
+                      pred_labels <- scIAE_output[['pred_labels']]
                       true_labels <- test_info
                       metrics <- evaluate(true_labels,pred_labels)
                       result_each=rbind(result_each,c(t,denoising_rate,lambda,activation_hidden,activation_output,
@@ -89,7 +91,7 @@ cross_validation <- function(data,
                   else if (base_classifier == 'kNN'){
                     for (kNN_k in kNN_k_interval){
                       count=count+1
-                      pred_labels <- scIAE (train_data,
+                      scIAE_output <- scIAE (train_data,
                                             train_info,
                                             test_data,
                                             t=t,
@@ -101,6 +103,7 @@ cross_validation <- function(data,
                                             encoded_2 = encoded_2,
                                             base_classifier = base_classifier,
                                             kNN_k = kNN_k) 
+                      pred_labels <- scIAE_output[['pred_labels']]
                       true_labels <- test_info
                       metrics <- evaluate(true_labels,pred_labels)
                       result_each=rbind(result_each,c(t,denoising_rate,lambda,activation_hidden,activation_output,
@@ -111,7 +114,7 @@ cross_validation <- function(data,
                   else if (base_classifier == 'PLSDA'){
                     for (n_components in n_components_interval){
                       count=count+1
-                      pred_labels <- scIAE (train_data,
+                      scIAE_output <- scIAE (train_data,
                                             train_info,
                                             test_data,
                                             t=t,
@@ -123,6 +126,7 @@ cross_validation <- function(data,
                                             encoded_2 = encoded_2,
                                             base_classifier = base_classifier,
                                             n_components = n_components) 
+                      pred_labels <- scIAE_output[['pred_labels']]
                       true_labels <- test_info
                       metrics <- evaluate(true_labels,pred_labels)
                       result_each=rbind(result_each,c(t,denoising_rate,lambda,activation_hidden,activation_output,
