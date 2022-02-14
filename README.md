@@ -6,7 +6,7 @@
  
   scIAE corresponds to the following paper:
   
-  Yin, Q., Wang, Y., Guan, J., Ji, G.. scIAE: an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data, Brief Bioinform, 2022, 23(1): bbab508.
+  Yin, Q., Wang, Y., Guan, J., Ji, G.. scIAE: an integrative autoencoder-based ensemble classification framework for single-cell RNA-seq data, Brief Bioinform, 2022, 23(1): bbab508. https://doi.org/10.1093/bib/bbab508
   
 ## 2. Installation
 Depends: 
