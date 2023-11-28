@@ -11,7 +11,7 @@
 ## 2. Installation
 Depends: 
 
-       R (>= 4.1.0)   
+       R (>= 4.0.2)   
        Python (>= 3.8.3)
 
 Requirements: 
@@ -34,9 +34,9 @@ Run `main.R`. The parameters can be changed as below.
 
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.5168428. If users want to use their own datasets, the order of cells in gene expression matrix should correspond to that in labels. Rows refer to cells, and columns refer to genes.
 
-      train_data <- read.csv("pancreas_smartseq_data.csv", row.names = 1) #gene expression matrix of training set (matrix or data.frame, not null)
+      train_data <- as.matrix(read.csv("pancreas_smartseq_data.csv", row.names = 1)) #gene expression matrix of training set (matrix or data.frame, not null)
       train_info <- read.csv("pancreas_smartseq_label.csv", row.names = 1)[, 1] #label of training set (character or integer, not null)
-      test_data <- read.csv("pancreas_celseq_data.csv", row.names = 1) #gene expression matrix of testing set (matrix or data.frame, not null)
+      test_data <- as.matrix(read.csv("pancreas_celseq_data.csv", row.names = 1)) #gene expression matrix of testing set (matrix or data.frame, not null)
       test_info <- read.csv("pancreas_celseq_label.csv", row.names = 1)[, 1] #label of testing set (character or integer, should be provided when calculating ACC, MeanF1, and MedF1)
 
       
